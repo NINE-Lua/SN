@@ -1,0 +1,36 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local morphFolder = workspace:WaitForChild("game"):WaitForChild("Morphs")
+local detectionRadius = 10
+local pushDistance = 5
+
+RunService.RenderStepped:Connect(function()
+	if not character or not character:FindFirstChild("HumanoidRootPart") then
+		character = player.Character or player.CharacterAdded:Wait()
+		hrp = character:WaitForChild("HumanoidRootPart")
+	end
+
+	for _, obj in pairs(morphFolder:GetChildren()) do
+		local part = nil
+
+		if obj:IsA("Model") then
+			part = obj.PrimaryPart or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")
+		elseif obj:IsA("BasePart") then
+			part = obj
+		end
+
+		if part then
+			local distance = (hrp.Position - part.Position).Magnitude
+			if distance <= detectionRadius then
+				local direction = (hrp.Position - part.Position).Unit
+				local newPosition = hrp.Position + direction * pushDistance
+				hrp.CFrame = CFrame.new(newPosition)
+			end
+		end
+	end
+end)
